@@ -99,7 +99,9 @@ class StateManager {
   }
 
   setLoopInterval(intervalId) {
-    this.clearGameLoops();
+    if (this.loopInterval) {
+      clearInterval(this.loopInterval);
+    }
     this.loopInterval = intervalId;
   }
 
@@ -108,8 +110,9 @@ class StateManager {
       clearInterval(this.loopInterval);
       this.loopInterval = null;
     }
-    // Clean key handlers if any
+    // Clean key handlers when navigating away
     document.onkeydown = null;
+    window.onkeydown = null;
   }
 
   resetProgress() {

@@ -1,6 +1,7 @@
 {
   "name": "dante-2.0",
   "version": "1.0.0",
+  "type": "module",
   "description": "Propuesta pedagógica interactiva de La Divina Comedia con 10 minijuegos",
   "main": "index.html",
   "scripts": {

@@ -58,11 +58,23 @@ export function initGame5(container, restartGame) {
   container.querySelector('#plat-btn-right').addEventListener('click', () => jump(1));
   container.querySelector('#plat-btn-jump').addEventListener('click', () => jump(0));
 
-  document.onkeydown = function(e) {
-    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { e.preventDefault(); jump(-1); }
-    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') { e.preventDefault(); jump(1); }
-    if (e.key === 'ArrowUp' || e.key === ' ' || e.key === 'w' || e.key === 'W') { e.preventDefault(); jump(0); }
-  };
+  function handlePlatKeyDown(e) {
+    const k = e.key;
+    const c = e.code;
+    if (k === 'ArrowLeft' || k === 'Left' || c === 'ArrowLeft' || k === 'a' || k === 'A' || c === 'KeyA') {
+      e.preventDefault();
+      jump(-1);
+    } else if (k === 'ArrowRight' || k === 'Right' || c === 'ArrowRight' || k === 'd' || k === 'D' || c === 'KeyD') {
+      e.preventDefault();
+      jump(1);
+    } else if (k === 'ArrowUp' || k === 'Up' || c === 'ArrowUp' || k === ' ' || c === 'Space' || k === 'w' || k === 'W' || c === 'KeyW') {
+      e.preventDefault();
+      jump(0);
+    }
+  }
+
+  window.onkeydown = handlePlatKeyDown;
+  document.onkeydown = handlePlatKeyDown;
 
   const loop = setInterval(() => {
     // Physics
