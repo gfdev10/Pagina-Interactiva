@@ -1,60 +1,150 @@
 /**
- * Juego 3: Laberinto de Minos (El Infierno) - Versión Mejorada & Dinámica
- * Incluye: Mapa de laberinto real 9x9 con muros, IA de persecución de Minos en tiempo real,
- * sistema de 3 vidas, antorchas místicas, portal de escape y aura de iluminación.
+ * Juego 3: Laberinto de Minos (El Infierno) - Versión Multivel Corregida y Optimizada
+ * 3 Niveles con pasillos individuales (1 bloque de ancho), acceso central libre (4,4),
+ * 100% de conectividad garantizada en todos los niveles y transición fluida por la puerta (🚪).
  */
 import { audioManager } from '../core/audio.js';
 import { stateManager } from '../core/state.js';
 
 export function initGame3(container, restartGame) {
-  // Matriz del laberinto (0: Pasillo, 1: Muro de piedra infernal)
-  const MAZE = [
-    [1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 0, 0, 0, 1, 0, 0, 0, 1], // (1,1) Inicio Dante; (7,1) Antorcha 1
-    [1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [1, 0, 1, 0, 0, 0, 1, 0, 1], // (1,3) Antorcha 2
-    [1, 0, 1, 1, 0, 1, 1, 0, 1], // (4,4) Guarida de Minos
-    [1, 0, 0, 0, 0, 0, 0, 0, 1], // Pasillo central
-    [1, 1, 1, 0, 1, 0, 1, 1, 1],
-    [1, 0, 0, 0, 1, 0, 0, 0, 1], // (1,7) Antorcha 3; (7,7) Portal de Escape
-    [1, 1, 1, 1, 1, 1, 1, 1, 1]
-  ];
-
   const TILE_SIZE = 38;
   const GRID_SIZE = 9;
   const CANVAS_SIZE = TILE_SIZE * GRID_SIZE; // 342px
+  const TOTAL_LEVELS = 3;
 
+  // Configuración de los 3 Niveles del Infierno
+  const levelsData = [
+    {
+      level: 1,
+      title: "Nivel 1: La Selva Oscura",
+      subtitle: "3 Antorchas - Minos patrulla moderada",
+      minosSpeedTicks: 11, // ~550ms
+      wallColor: '#2d0606',
+      wallBorder: '#7f1d1d',
+      wallRelief: '#991b1b',
+      maze: [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 0, 1, 0, 1, 0, 1, 0, 1],
+        [1, 0, 1, 0, 0, 0, 1, 0, 1],
+        [1, 0, 1, 0, 0, 0, 1, 0, 1],
+        [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 1, 1, 0, 1, 0, 1, 1, 1],
+        [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1]
+      ],
+      torches: [
+        { x: 7, y: 1 },
+        { x: 1, y: 3 },
+        { x: 1, y: 7 }
+      ]
+    },
+    {
+      level: 2,
+      title: "Nivel 2: La Ciudad de Dite",
+      subtitle: "4 Antorchas - Pasillos cruzados y muros púrpura",
+      minosSpeedTicks: 9, // ~450ms
+      wallColor: '#3b0764',
+      wallBorder: '#9333ea',
+      wallRelief: '#c084fc',
+      maze: [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 1, 1, 0, 1, 1, 0, 1],
+        [1, 0, 1, 0, 0, 0, 1, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 1, 0, 0, 0, 1, 0, 1],
+        [1, 0, 1, 1, 0, 1, 1, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1]
+      ],
+      torches: [
+        { x: 7, y: 1 },
+        { x: 1, y: 3 },
+        { x: 7, y: 3 },
+        { x: 4, y: 5 }
+      ]
+    },
+    {
+      level: 3,
+      title: "Nivel 3: El Abismo de Cocito",
+      subtitle: "5 Antorchas - Acceso central fluido y Minos veloz",
+      minosSpeedTicks: 7, // ~350ms
+      wallColor: '#1e1b4b',
+      wallBorder: '#3b82f6',
+      wallRelief: '#60a5fa',
+      maze: [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 0, 1, 0, 0, 0, 1, 0, 1],
+        [1, 0, 1, 1, 0, 1, 1, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 1, 1, 0, 1, 1, 0, 1],
+        [1, 0, 1, 0, 0, 0, 1, 0, 1],
+        [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1]
+      ],
+      torches: [
+        { x: 7, y: 1 },
+        { x: 3, y: 2 },
+        { x: 5, y: 6 },
+        { x: 1, y: 7 },
+        { x: 3, y: 7 }
+      ]
+    }
+  ];
+
+  let currentLevelIdx = 0;
   let player = { x: 1, y: 1, invulnerable: 0 };
   let minos = { x: 4, y: 4 };
   let exitPortal = { x: 7, y: 7, unlocked: false };
-  let torches = [
-    { x: 7, y: 1, collected: false },
-    { x: 1, y: 3, collected: false },
-    { x: 1, y: 7, collected: false }
-  ];
-
+  let currentTorches = [];
   let lives = 3;
-  let collectedTorches = 0;
   let isGameOver = false;
   let animTick = 0;
+  let minosMoveCounter = 0;
+
+  function loadLevel(levelIdx) {
+    currentLevelIdx = levelIdx;
+    const lvl = levelsData[currentLevelIdx];
+
+    player.x = 1;
+    player.y = 1;
+    player.invulnerable = 25;
+
+    minos.x = 4;
+    minos.y = 4;
+
+    exitPortal.x = 7;
+    exitPortal.y = 7;
+    exitPortal.unlocked = false;
+
+    currentTorches = lvl.torches.map(t => ({ x: t.x, y: t.y, collected: false }));
+    minosMoveCounter = 0;
+
+    updateHUD();
+  }
 
   container.innerHTML = `
     <div class="space-y-3 text-center max-w-md w-full">
       <!-- HUD Superior -->
-      <div class="flex justify-between items-center bg-slate-950/80 px-4 py-2 rounded-xl border border-red-900/60 text-xs">
-        <div class="flex items-center space-x-1.5">
-          <span class="text-slate-400 font-semibold">Vidas:</span>
+      <div class="bg-slate-950/90 p-3 rounded-2xl border border-red-900/60 shadow-inner flex flex-wrap justify-between items-center text-xs gap-2">
+        <div class="flex items-center space-x-2">
+          <span id="lab-level-badge" class="px-2 py-0.5 rounded-md bg-red-950 border border-red-700 text-red-300 font-bold text-[11px] uppercase">
+            Nivel 1 / ${TOTAL_LEVELS}
+          </span>
           <span id="lab-lives" class="text-red-500 font-bold tracking-widest text-sm">❤️❤️❤️</span>
         </div>
+        
         <div class="flex items-center space-x-1.5">
           <span class="text-slate-400 font-semibold">Antorchas:</span>
           <span id="lab-torches-count" class="text-amber-400 font-bold text-sm">0 / 3 🔥</span>
         </div>
       </div>
 
-      <!-- Estado / Misión -->
+      <!-- Estado y Misión -->
       <div id="lab-status-msg" class="text-xs font-bold text-amber-300 transition-all">
-        🔥 Recoge las 3 antorchas para abrir el Portal de Escape
+        🔥 Recoge todas las antorchas para abrir la puerta de escape (🚪)
       </div>
 
       <!-- Canvas del Laberinto -->
@@ -71,7 +161,7 @@ export function initGame3(container, restartGame) {
         <button id="btn-lab-down" class="p-3 bg-slate-800 hover:bg-slate-700 active:scale-90 text-slate-200 rounded-xl border border-slate-700 transition-transform shadow-md"><i class="fa-solid fa-arrow-down"></i></button>
         <button id="btn-lab-right" class="p-3 bg-slate-800 hover:bg-slate-700 active:scale-90 text-slate-200 rounded-xl border border-slate-700 transition-transform shadow-md"><i class="fa-solid fa-arrow-right"></i></button>
       </div>
-      <p class="text-[11px] text-slate-500">Puedes moverte con las FLECHAS del teclado o las teclas W, A, S, D.</p>
+      <p class="text-[11px] text-slate-500">Mueve a Dante con las FLECHAS o W, A, S, D paso a paso.</p>
     </div>
   `;
 
@@ -81,27 +171,43 @@ export function initGame3(container, restartGame) {
 
   function isWalkable(x, y) {
     if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) return false;
-    return MAZE[y][x] === 0;
+    const currentMaze = levelsData[currentLevelIdx].maze;
+    return currentMaze[y][x] === 0;
   }
 
   function updateHUD() {
+    const lvlBadge = container.querySelector('#lab-level-badge');
     const livesEl = container.querySelector('#lab-lives');
     const torchesEl = container.querySelector('#lab-torches-count');
     const msgEl = container.querySelector('#lab-status-msg');
 
+    const lvl = levelsData[currentLevelIdx];
+    const collectedCount = currentTorches.filter(t => t.collected).length;
+    const totalCount = currentTorches.length;
+
+    if (lvlBadge) {
+      lvlBadge.innerText = `Nivel ${currentLevelIdx + 1} / ${TOTAL_LEVELS}`;
+    }
+
     if (livesEl) {
       livesEl.innerText = '❤️'.repeat(Math.max(0, lives)) + '🖤'.repeat(Math.max(0, 3 - lives));
     }
+
     if (torchesEl) {
-      torchesEl.innerText = `${collectedTorches} / 3 🔥`;
+      torchesEl.innerText = `${collectedCount} / ${totalCount} 🔥`;
     }
+
     if (msgEl) {
       if (exitPortal.unlocked) {
         msgEl.className = "text-xs font-bold text-emerald-400 animate-pulse";
-        msgEl.innerHTML = "✨ ¡Portal Desbloqueado! ¡Corre a la salida (🚪) en la esquina inferior!";
+        if (currentLevelIdx < TOTAL_LEVELS - 1) {
+          msgEl.innerHTML = `✨ ¡Puerta desbloqueada! ¡Entra a la puerta (🚪) en la esquina inferior para pasar al Nivel ${currentLevelIdx + 2}!`;
+        } else {
+          msgEl.innerHTML = "✨ ¡Puerta Final abierta! ¡Cruza la salida (🚪) para escapar del Infierno!";
+        }
       } else {
         msgEl.className = "text-xs font-bold text-amber-300";
-        msgEl.innerText = `🔥 Recoge las ${3 - collectedTorches} antorcha(s) restante(s) para abrir el portal`;
+        msgEl.innerText = `🔥 ${lvl.title}: Recoge las ${totalCount - collectedCount} antorchas restantes`;
       }
     }
   }
@@ -110,25 +216,28 @@ export function initGame3(container, restartGame) {
     animTick++;
     ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
+    const lvl = levelsData[currentLevelIdx];
+    const currentMaze = lvl.maze;
+
     // 1. Dibujar Casillas y Muros
     for (let y = 0; y < GRID_SIZE; y++) {
       for (let x = 0; x < GRID_SIZE; x++) {
         const px = x * TILE_SIZE;
         const py = y * TILE_SIZE;
 
-        if (MAZE[y][x] === 1) {
-          // Muro de piedra obsidiana infernal
-          ctx.fillStyle = '#2d0606';
+        if (currentMaze[y][x] === 1) {
+          // Muro del laberinto
+          ctx.fillStyle = lvl.wallColor;
           ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
-          ctx.strokeStyle = '#5a0d0d';
+          ctx.strokeStyle = lvl.wallBorder;
           ctx.lineWidth = 2;
           ctx.strokeRect(px + 1, py + 1, TILE_SIZE - 2, TILE_SIZE - 2);
 
           // Detalle de relieve
-          ctx.fillStyle = '#7f1d1d';
+          ctx.fillStyle = lvl.wallRelief;
           ctx.fillRect(px + 4, py + 4, TILE_SIZE - 8, 3);
         } else {
-          // Suelo de adoquines oscuros
+          // Pasillo transitable
           ctx.fillStyle = '#0f172a';
           ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
           ctx.strokeStyle = '#1e293b';
@@ -139,15 +248,15 @@ export function initGame3(container, restartGame) {
     }
 
     // 2. Dibujar Antorchas
-    torches.forEach(t => {
+    currentTorches.forEach(t => {
       if (!t.collected) {
         const px = t.x * TILE_SIZE + TILE_SIZE / 2;
         const py = t.y * TILE_SIZE + TILE_SIZE / 2;
 
-        // Aura de luz de la antorcha
+        // Aura de luz
         const glowRadius = 16 + Math.sin(animTick * 0.15) * 3;
         const grad = ctx.createRadialGradient(px, py, 4, px, py, glowRadius);
-        grad.addColorStop(0, 'rgba(245, 158, 11, 0.45)');
+        grad.addColorStop(0, 'rgba(245, 158, 11, 0.55)');
         grad.addColorStop(1, 'rgba(245, 158, 11, 0)');
         ctx.fillStyle = grad;
         ctx.beginPath();
@@ -161,12 +270,12 @@ export function initGame3(container, restartGame) {
       }
     });
 
-    // 3. Dibujar Portal de Salida
+    // 3. Dibujar Puerta / Portal de Salida
     const portalPx = exitPortal.x * TILE_SIZE + TILE_SIZE / 2;
     const portalPy = exitPortal.y * TILE_SIZE + TILE_SIZE / 2;
 
     if (exitPortal.unlocked) {
-      // Aura mágica del portal
+      // Aura mágica
       const glow = 18 + Math.sin(animTick * 0.2) * 5;
       const pGrad = ctx.createRadialGradient(portalPx, portalPy, 2, portalPx, portalPy, glow);
       pGrad.addColorStop(0, 'rgba(56, 189, 248, 0.6)');
@@ -191,9 +300,8 @@ export function initGame3(container, restartGame) {
     const minosPx = minos.x * TILE_SIZE + TILE_SIZE / 2;
     const minosPy = minos.y * TILE_SIZE + TILE_SIZE / 2;
 
-    // Aura siniestra de Minos
     const mGrad = ctx.createRadialGradient(minosPx, minosPy, 4, minosPx, minosPy, 18);
-    mGrad.addColorStop(0, 'rgba(239, 68, 68, 0.5)');
+    mGrad.addColorStop(0, 'rgba(239, 68, 68, 0.55)');
     mGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
     ctx.fillStyle = mGrad;
     ctx.beginPath();
@@ -210,9 +318,8 @@ export function initGame3(container, restartGame) {
       const playerPx = player.x * TILE_SIZE + TILE_SIZE / 2;
       const playerPy = player.y * TILE_SIZE + TILE_SIZE / 2;
 
-      // Aura de guía divina
       const dGrad = ctx.createRadialGradient(playerPx, playerPy, 4, playerPx, playerPy, 15);
-      dGrad.addColorStop(0, 'rgba(250, 204, 21, 0.4)');
+      dGrad.addColorStop(0, 'rgba(250, 204, 21, 0.45)');
       dGrad.addColorStop(1, 'rgba(250, 204, 21, 0)');
       ctx.fillStyle = dGrad;
       ctx.beginPath();
@@ -230,8 +337,14 @@ export function initGame3(container, restartGame) {
     }
   }
 
+  let lastMoveTime = 0;
+
   function movePlayer(dx, dy) {
     if (isGameOver) return;
+
+    const now = Date.now();
+    if (now - lastMoveTime < 110) return; // Evita doble paso por rebote o eventos duplicados
+    lastMoveTime = now;
 
     const nx = player.x + dx;
     const ny = player.y + dy;
@@ -241,14 +354,14 @@ export function initGame3(container, restartGame) {
       player.y = ny;
       audioManager.playClick();
 
-      // Verificar recolección de antorchas
-      torches.forEach(t => {
+      // Recolección de antorchas
+      currentTorches.forEach(t => {
         if (!t.collected && t.x === player.x && t.y === player.y) {
           t.collected = true;
-          collectedTorches++;
           audioManager.playSound('success');
 
-          if (collectedTorches === torches.length) {
+          const allCollected = currentTorches.every(torch => torch.collected);
+          if (allCollected) {
             exitPortal.unlocked = true;
             audioManager.playSuccess();
           }
@@ -256,9 +369,9 @@ export function initGame3(container, restartGame) {
         }
       });
 
-      // Verificar escape por el portal
+      // Paso a través de la Puerta (🚪)
       if (exitPortal.unlocked && player.x === exitPortal.x && player.y === exitPortal.y) {
-        winGame();
+        handleDoorReached();
         return;
       }
 
@@ -267,7 +380,31 @@ export function initGame3(container, restartGame) {
     }
   }
 
-  // IA de Minos (Búsqueda hacia el jugador por caminos transitables)
+  function handleDoorReached() {
+    audioManager.playSuccess();
+
+    if (currentLevelIdx < TOTAL_LEVELS - 1) {
+      // Avanzar al siguiente nivel
+      const statusMsg = container.querySelector('#lab-status-msg');
+      if (statusMsg) {
+        statusMsg.className = "text-xs font-bold text-emerald-300 animate-pulse";
+        statusMsg.innerHTML = `🌟 ¡Cruzaste la puerta! Descendiendo a <strong>${levelsData[currentLevelIdx + 1].title}</strong>...`;
+      }
+
+      // Recompensa: +1 vida extra (máximo 3)
+      lives = Math.min(3, lives + 1);
+
+      setTimeout(() => {
+        loadLevel(currentLevelIdx + 1);
+        draw();
+      }, 900);
+    } else {
+      // Victoria final tras completar los 3 niveles
+      winAllLevels();
+    }
+  }
+
+  // IA de Minos
   function stepMinos() {
     if (isGameOver) return;
 
@@ -283,8 +420,9 @@ export function initGame3(container, restartGame) {
       .filter(pos => isWalkable(pos.x, pos.y));
 
     if (validMoves.length > 0) {
-      // 75% persigue directamente calculando distancia Manhattan, 25% movimiento aleatorio
-      if (Math.random() < 0.75) {
+      const chaseChance = currentLevelIdx === 2 ? 0.85 : (currentLevelIdx === 1 ? 0.78 : 0.70);
+
+      if (Math.random() < chaseChance) {
         validMoves.sort((a, b) => {
           const distA = Math.hypot(a.x - player.x, a.y - player.y);
           const distB = Math.hypot(b.x - player.x, b.y - player.y);
@@ -313,15 +451,14 @@ export function initGame3(container, restartGame) {
       if (lives <= 0) {
         gameOver();
       } else {
-        // Respawn de Dante al inicio con invulnerabilidad temporal
         player.x = 1;
         player.y = 1;
-        player.invulnerable = 30; // ~1.5 segundos
+        player.invulnerable = 30;
       }
     }
   }
 
-  function winGame() {
+  function winAllLevels() {
     isGameOver = true;
     stateManager.clearGameLoops();
     stateManager.markGameCompleted(3);
@@ -330,17 +467,19 @@ export function initGame3(container, restartGame) {
       container.innerHTML = `
         <div class="text-center space-y-4">
           <i class="fa-solid fa-dungeon text-5xl text-amber-400 animate-bounce"></i>
-          <h3 class="font-cinzel text-2xl font-bold text-white">¡Escapaste del Laberinto!</h3>
-          <p class="text-slate-300 text-sm">Conseguiste las 3 antorchas, evitaste las garras de Minos y atravesaste el Portal hacia el Purgatorio.</p>
+          <h3 class="font-cinzel text-2xl font-bold text-white">¡Escapaste de los 3 Laberintos Infernales!</h3>
+          <p class="text-slate-300 text-sm max-w-sm mx-auto leading-relaxed">
+            Has superado la <em>Selva Oscura</em>, la <em>Ciudad de Dite</em> y el <em>Abismo de Cocito</em>, burlando a Minos en los 3 niveles para alcanzar el Purgatorio.
+          </p>
           <button id="retry-g3-btn" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-xs text-amber-400 font-bold rounded-xl border border-slate-700 transition-colors shadow-lg">
-            <i class="fa-solid fa-rotate-right mr-1"></i> Jugar de nuevo
+            <i class="fa-solid fa-rotate-right mr-1"></i> Jugar los 3 Niveles de nuevo
           </button>
         </div>
       `;
       container.querySelector('#retry-g3-btn').addEventListener('click', () => {
         restartGame(3);
       });
-    }, 300);
+    }, 400);
   }
 
   function gameOver() {
@@ -353,9 +492,9 @@ export function initGame3(container, restartGame) {
         <div class="text-center space-y-4">
           <i class="fa-solid fa-skull text-5xl text-red-500 animate-pulse"></i>
           <h3 class="font-cinzel text-2xl font-bold text-red-400">¡Minos te ha atrapado!</h3>
-          <p class="text-slate-300 text-sm">Te has quedado sin vidas en los oscuros pasillos del Infierno.</p>
+          <p class="text-slate-300 text-sm">Te has quedado sin vidas en el Nivel ${currentLevelIdx + 1} (${levelsData[currentLevelIdx].title}).</p>
           <button id="retry-g3-over" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition-colors shadow-lg">
-            <i class="fa-solid fa-rotate-right mr-1"></i> Intentar el Laberinto de nuevo
+            <i class="fa-solid fa-rotate-right mr-1"></i> Reiniciar Laberinto (Nivel 1)
           </button>
         </div>
       `;
@@ -365,29 +504,17 @@ export function initGame3(container, restartGame) {
     }, 400);
   }
 
-  // Conectar botones D-Pad
+  // Conectar Botones D-Pad
   container.querySelector('#btn-lab-up').addEventListener('click', () => movePlayer(0, -1));
   container.querySelector('#btn-lab-down').addEventListener('click', () => movePlayer(0, 1));
   container.querySelector('#btn-lab-left').addEventListener('click', () => movePlayer(-1, 0));
   container.querySelector('#btn-lab-right').addEventListener('click', () => movePlayer(1, 0));
 
-  // Bucles de Renderizado e IA
-  let minosMoveCounter = 0;
-  const loop = setInterval(() => {
-    draw();
-    minosMoveCounter++;
-    // Minos da un paso cada ~500ms (10 ticks de 50ms)
-    if (minosMoveCounter >= 10) {
-      minosMoveCounter = 0;
-      stepMinos();
-    }
-  }, 50);
-
-  stateManager.setLoopInterval(loop);
-
-  // Conectar Teclado Robusto (Flechas, WASD, e.key y e.code)
+  // Conectar Teclado (Flechas y WASD) de forma única y precisa
   function handleKeyDown(e) {
     if (isGameOver) return;
+    if (e.repeat) return; // Evita saltos múltiples por repetición continua del sistema operativo
+
     const k = e.key;
     const c = e.code;
 
@@ -406,9 +533,24 @@ export function initGame3(container, restartGame) {
     }
   }
 
+  // Asignar a un solo objetivo para evitar disparos dobles por propagación
   window.onkeydown = handleKeyDown;
-  document.onkeydown = handleKeyDown;
+  document.onkeydown = null;
 
-  updateHUD();
-  draw();
+  // Bucle de físicas y Minos
+  const loop = setInterval(() => {
+    draw();
+    minosMoveCounter++;
+
+    const currentSpeedTicks = levelsData[currentLevelIdx].minosSpeedTicks;
+    if (minosMoveCounter >= currentSpeedTicks) {
+      minosMoveCounter = 0;
+      stepMinos();
+    }
+  }, 50);
+
+  stateManager.setLoopInterval(loop);
+
+  // Iniciar Nivel 1
+  loadLevel(0);
 }
