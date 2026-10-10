@@ -44,7 +44,7 @@ export const reinosData = [
       buttonBorder: 'border-amber-900/30'
     },
     games: [
-      { id: 4, title: '4. Canto de Lamentos (Simon)', description: 'Memoriza y repite las secuencias sonoras de purificación.' },
+      { id: 4, title: '4. Luces del Purgatorio (Simon 8)', description: 'Memoriza secuencias visuales de dificultad creciente en las 8 terrazas.' },
       { id: 5, title: '5. Escalada en Plataformas 2D', description: 'Salta entre cornisas y elimina las 7 marcas "P".' },
       { id: 6, title: '6. Balanza de las Virtudes', description: 'Contrarresta el pecado de la soberbia con virtudes exactas.' }
     ]

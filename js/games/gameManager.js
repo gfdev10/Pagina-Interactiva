@@ -22,7 +22,7 @@ class GameManager {
       1: { title: "Juego 1: Trivia Dantesca", init: initGame1 },
       2: { title: "Juego 2: Memotest de Palabras", init: initGame2 },
       3: { title: "Juego 3: Laberinto de Minos", init: initGame3 },
-      4: { title: "Juego 4: Canto de Lamentos (Simon)", init: initGame4 },
+      4: { title: "Juego 4: Luces del Purgatorio (Simon 8)", init: initGame4 },
       5: { title: "Juego 5: Escalada en Plataformas 2D", init: initGame5 },
       6: { title: "Juego 6: Balanza de las Virtudes", init: initGame6 },
       7: { title: "Juego 7: Vuelo por la Esfera Celeste", init: initGame7 },
