@@ -1,0 +1,13 @@
+{
+  "name": "dante-2.0",
+  "version": "1.0.0",
+  "description": "Propuesta pedagógica interactiva de La Divina Comedia con 10 minijuegos",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve ."
+  },
+  "keywords": ["dante", "educacion", "juegos", "vanilla-js"],
+  "author": "",
+  "license": "MIT"
+}

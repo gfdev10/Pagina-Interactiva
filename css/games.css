@@ -1,0 +1,52 @@
+/* ==========================================================================
+   DANTE 2.0 - GAMES STYLES
+   Estilos dedicados para minijuegos, canvas interactivos y tarjetas
+   ========================================================================== */
+
+#game-stage {
+  min-height: 480px;
+}
+
+/* Canvas Styles */
+canvas {
+  image-rendering: pixelated;
+  touch-action: none;
+}
+
+/* Memotest Cards */
+.memo-card {
+  perspective: 1000px;
+  transition: transform 0.2s, border-color 0.2s, background-color 0.2s;
+}
+
+.memo-card:active {
+  transform: scale(0.96);
+}
+
+/* Simon Game Pads */
+.simon-pad {
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.simon-pad.active {
+  opacity: 1 !important;
+  transform: scale(1.04);
+  box-shadow: 0 0 25px rgba(255, 255, 255, 0.6);
+}
+
+/* Feedback banners */
+.feedback-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Virtual Keyboard */
+.vk-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
