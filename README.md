@@ -40,7 +40,7 @@ Pagina Interactiva/
         ├── game6-balanza.js    # Juego 6: Balanza de las Virtudes
         ├── game7-vuelo.js      # Juego 7: Vuelo por la Esfera Celeste
         ├── game8-enigma.js     # Juego 8: Enigma Rosa Creadora
-        └── game9-anillos.js    # Juego 9: Anillos de la Trinidad
+        └── game9-anillos.js    # Juego 9: Vuelo al Empíreo (Estilo Flappy Bird)
 ```
 
 ---

@@ -67,9 +67,9 @@ export const reinosData = [
       buttonBorder: 'border-sky-900/30'
     },
     games: [
-      { id: 7, title: '7. Vuelo por la Esfera Celeste', description: 'Guía el alma de Dante para recolectar 10 estrellas.' },
-      { id: 8, title: '8. Enigma Rosa Creadora', description: 'Descifra el mensaje místico letra por letra.' },
-      { id: 9, title: '9. Anillos de la Trinidad', description: 'Alinea los tres círculos celestiales en perfecta armonía.' }
+      { id: 7, title: '7. Vuelo por la Esfera Celeste', description: 'Atraviesa las 3 esferas celestiales del Paraíso esquivando cometas.' },
+      { id: 8, title: '8. Enigma Rosa Creadora', description: 'Descifra los 3 enigmas sagrados de la Rosa Mística con pistas de sabiduría.' },
+      { id: 9, title: '9. Vuelo al Empíreo (Flappy)', description: 'Vuela con alas celestiales sorteando las columnas de luz hacia la gloria eterna.' }
     ]
   }
 ];

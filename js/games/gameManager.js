@@ -27,7 +27,7 @@ class GameManager {
       6: { title: "Juego 6: Balanza de las Virtudes", init: initGame6 },
       7: { title: "Juego 7: Vuelo por la Esfera Celeste", init: initGame7 },
       8: { title: "Juego 8: Enigma Rosa Creadora", init: initGame8 },
-      9: { title: "Juego 9: Anillos de la Trinidad", init: initGame9 }
+      9: { title: "Juego 9: Vuelo al Empíreo (Flappy Bird)", init: initGame9 }
     };
   }
 
