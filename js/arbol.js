@@ -204,26 +204,47 @@ class ArbolVocacional {
     }
   }
 
-  // Cálculo de etapa de crecimiento sin límite artificial de hojas
+  // Cálculo de etapa de crecimiento sin límite artificial de hojas (iniciando en Semilla)
   getGrowthStageInfo() {
     const count = this.leaves.length;
-    if (count <= 3) {
+
+    if (count === 0) {
+      return {
+        stage: 0,
+        isSeed: true,
+        isSprout: false,
+        title: 'Semilla de la Vocación (Sin Germinar)',
+        badge: '🌰 Semilla Plantada',
+        desc: 'La semilla está sembrada en tierra fértil. ¡Agrega la primera hoja con tu vocación para hacerla brotar!',
+        scale: 0.35,
+        trunkHeight: 50,
+        trunkWidth: 16,
+        foliageRadiusX: 60,
+        foliageRadiusY: 45,
+        branchesCount: 0,
+        glowColor: 'rgba(245, 158, 11, 0.45)'
+      };
+    } else if (count <= 3) {
       return {
         stage: 1,
-        title: 'Brote Tierno (Tamaño Chico)',
-        badge: '🌱 Brote Inicial',
-        desc: 'El árbol apenas comienza a brotar. Con cada sueño de 7mo grado, sus ramas se alzarán al cielo.',
-        scale: 0.58,
-        trunkHeight: 180,
-        trunkWidth: 26,
-        foliageRadiusX: 130,
-        foliageRadiusY: 90,
-        branchesCount: 4,
-        glowColor: 'rgba(52, 211, 153, 0.25)'
+        isSeed: false,
+        isSprout: true,
+        title: 'Brote Tierno (La Semilla Germina)',
+        badge: '🌱 Brote Recién Nacido',
+        desc: '¡La semilla ha germinado! Un tallo tierno y lleno de vida se alza con las primeras hojas del curso.',
+        scale: 0.55,
+        trunkHeight: 150,
+        trunkWidth: 20,
+        foliageRadiusX: 120,
+        foliageRadiusY: 85,
+        branchesCount: 3,
+        glowColor: 'rgba(52, 211, 153, 0.35)'
       };
     } else if (count <= 8) {
       return {
         stage: 2,
+        isSeed: false,
+        isSprout: false,
         title: 'Arbusto en Crecimiento',
         badge: '🌿 En Desarrollo',
         desc: 'Nuevas ramas brotan hacia los lados. El tronco adquiere firmeza con las primeras vocaciones.',
@@ -238,6 +259,8 @@ class ArbolVocacional {
     } else if (count <= 18) {
       return {
         stage: 3,
+        isSeed: false,
+        isSprout: false,
         title: 'Árbol Joven y Frondoso',
         badge: '🌳 Árbol Frondoso',
         desc: 'La copa se expande con fuerza. Múltiples ramas albergan las metas y aspiraciones del curso.',
@@ -252,6 +275,8 @@ class ArbolVocacional {
     } else if (count <= 35) {
       return {
         stage: 4,
+        isSeed: false,
+        isSprout: false,
         title: 'Gran Árbol de la Sabiduría',
         badge: '✨ Gran Árbol',
         desc: 'Un árbol imponente y frondoso. Sus ramas alcanzan las alturas con la diversidad de vocaciones.',
@@ -266,6 +291,8 @@ class ArbolVocacional {
     } else if (count <= 60) {
       return {
         stage: 5,
+        isSeed: false,
+        isSprout: false,
         title: 'Roble Centenario en Plenitud',
         badge: '👑 Roble Centenario',
         desc: '¡Esplendor absoluto! Todos los sueños de la clase forman una copa majestuosa y llena de vida.',
@@ -282,6 +309,8 @@ class ArbolVocacional {
       const extraFactor = Math.min(1.2, 1 + Math.log10(count / 60) * 0.15);
       return {
         stage: 6,
+        isSeed: false,
+        isSprout: false,
         title: 'Árbol Cósmico de los Sueños (Infinito)',
         badge: '🌟 Árbol Infinito',
         desc: `¡Árbol sin fronteras! Con ${count} hojas florecidas, las vocaciones forman un bosque de sabiduría inagotable.`,
@@ -305,6 +334,92 @@ class ArbolVocacional {
     const baseGroundY = 680;
     const trunkTopY = baseGroundY - stage.trunkHeight;
 
+    // CASO 1: LA SEMILLA EN LA TIERRA FÉRTIL (0 HOJAS)
+    if (stage.isSeed) {
+      return `
+      <svg id="tree-svg" viewBox="0 0 900 800" class="w-full h-full max-h-[640px] select-none mx-auto overflow-visible">
+        <defs>
+          <radialGradient id="seedGrad" cx="35%" cy="35%" r="65%">
+            <stop offset="0%" stop-color="#fde047" />
+            <stop offset="35%" stop-color="#f59e0b" />
+            <stop offset="75%" stop-color="#b45309" />
+            <stop offset="100%" stop-color="#451a03" />
+          </radialGradient>
+          <radialGradient id="earthGrad" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#047857" />
+            <stop offset="25%" stop-color="#065f46" />
+            <stop offset="60%" stop-color="#3d2314" />
+            <stop offset="100%" stop-color="#1c0f06" />
+          </radialGradient>
+          <radialGradient id="seedGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(251, 191, 36, 0.75)" />
+            <stop offset="60%" stop-color="rgba(245, 158, 11, 0.25)" />
+            <stop offset="100%" stop-color="rgba(245, 158, 11, 0)" />
+          </radialGradient>
+          <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="8" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+
+        <!-- Suelo con colina fértil -->
+        <ellipse cx="${baseCenterX}" cy="${baseGroundY + 120}" rx="420" ry="140" fill="#064e3b" opacity="0.95" />
+        <ellipse cx="${baseCenterX}" cy="${baseGroundY + 80}" rx="380" ry="110" fill="url(#earthGrad)" opacity="0.9" />
+
+        <!-- Montículo de siembra -->
+        <ellipse cx="${baseCenterX}" cy="${baseGroundY - 15}" rx="110" ry="40" fill="#451a03" stroke="#78350f" stroke-width="2" />
+        <ellipse cx="${baseCenterX}" cy="${baseGroundY - 22}" rx="90" ry="28" fill="#58311a" opacity="0.8" />
+
+        <!-- Halo brillante de la semilla -->
+        <circle cx="${baseCenterX}" cy="${baseGroundY - 45}" r="110" fill="url(#seedGlow)" class="animate-pulse" />
+
+        <!-- Raicillas germinando hacia la tierra fértil -->
+        <g stroke="#d97706" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.8">
+          <path d="M ${baseCenterX} ${baseGroundY - 10} Q ${baseCenterX - 25} ${baseGroundY + 15} ${baseCenterX - 45} ${baseGroundY + 45}" />
+          <path d="M ${baseCenterX} ${baseGroundY - 10} Q ${baseCenterX + 25} ${baseGroundY + 15} ${baseCenterX + 45} ${baseGroundY + 45}" />
+          <path d="M ${baseCenterX} ${baseGroundY - 5} Q ${baseCenterX} ${baseGroundY + 25} ${baseCenterX - 15} ${baseGroundY + 55}" />
+          <path d="M ${baseCenterX} ${baseGroundY - 5} Q ${baseCenterX + 10} ${baseGroundY + 25} ${baseCenterX + 20} ${baseGroundY + 55}" />
+        </g>
+
+        <!-- La Semilla de Oro Orgánica en el centro -->
+        <g class="transition-transform duration-500 hover:scale-110 origin-center cursor-pointer">
+          <!-- Cuerpo de la semilla -->
+          <path d="M ${baseCenterX} ${baseGroundY - 95}
+                   C ${baseCenterX + 38} ${baseGroundY - 95}, ${baseCenterX + 55} ${baseGroundY - 55}, ${baseCenterX + 40} ${baseGroundY - 18}
+                   C ${baseCenterX + 22} ${baseGroundY + 8}, ${baseCenterX} ${baseGroundY + 14}, ${baseCenterX} ${baseGroundY + 14}
+                   C ${baseCenterX} ${baseGroundY + 14}, ${baseCenterX - 22} ${baseGroundY + 8}, ${baseCenterX - 40} ${baseGroundY - 18}
+                   C ${baseCenterX - 55} ${baseGroundY - 55}, ${baseCenterX - 38} ${baseGroundY - 95}, ${baseCenterX} ${baseGroundY - 95} Z"
+                fill="url(#seedGrad)" stroke="#f59e0b" stroke-width="3" filter="url(#softGlow)" />
+
+          <!-- Vetas doradas de la semilla -->
+          <path d="M ${baseCenterX} ${baseGroundY - 90} Q ${baseCenterX + 25} ${baseGroundY - 55} ${baseCenterX} ${baseGroundY + 6}" stroke="rgba(254, 240, 138, 0.7)" stroke-width="2" fill="none" />
+          <path d="M ${baseCenterX} ${baseGroundY - 90} Q ${baseCenterX - 25} ${baseGroundY - 55} ${baseCenterX} ${baseGroundY + 6}" stroke="rgba(120, 53, 15, 0.4)" stroke-width="2" fill="none" />
+
+          <!-- Primer brotecito verde asomando de la punta de la semilla -->
+          <path d="M ${baseCenterX - 4} ${baseGroundY - 92} Q ${baseCenterX - 20} ${baseGroundY - 122} ${baseCenterX - 2} ${baseGroundY - 132} Q ${baseCenterX + 16} ${baseGroundY - 118} ${baseCenterX + 4} ${baseGroundY - 92} Z"
+                fill="#10b981" stroke="#059669" stroke-width="2" />
+          <path d="M ${baseCenterX} ${baseGroundY - 95} L ${baseCenterX - 6} ${baseGroundY - 124}" stroke="#34d399" stroke-width="1.5" />
+
+          <!-- Destellos de luz en la semilla -->
+          <circle cx="${baseCenterX - 14}" cy="${baseGroundY - 65}" r="6" fill="#fef08a" opacity="0.9" />
+          <circle cx="${baseCenterX + 16}" cy="${baseGroundY - 40}" r="3.5" fill="#fef08a" opacity="0.75" />
+        </g>
+
+        <!-- Cartel flotante de la semilla -->
+        <g transform="translate(${baseCenterX}, ${baseGroundY - 180})">
+          <rect x="-155" y="-24" width="310" height="48" rx="14" fill="rgba(15, 23, 42, 0.92)" stroke="#f59e0b" stroke-width="1.6" filter="url(#softGlow)" />
+          <text x="0" y="-4" text-anchor="middle" fill="#fef08a" font-size="13" font-weight="bold" font-family="'Cinzel', serif">
+            🌰 SEMILLA DE LA VOCACIÓN
+          </text>
+          <text x="0" y="14" text-anchor="middle" fill="#94a3b8" font-size="10.5" font-weight="600" font-family="'Quicksand', sans-serif">
+            ¡Agrega tu nombre y profesión para hacerla germinar!
+          </text>
+        </g>
+      </svg>
+      `;
+    }
+
+    // CASO 2: EL ÁRBOL / BROTE EN CRECIMIENTO (CON HOJAS)
     // Distribución armónica de las hojas en múltiples capas (sin límite)
     const leafPositions = this.calculateLeafSockets(count, baseCenterX, trunkTopY, stage);
 
@@ -336,18 +451,39 @@ class ArbolVocacional {
       `;
     });
 
-    // 2. Tronco orgánico con curvas y raíces
-    const trunkPath = `
-      M ${baseCenterX - stage.trunkWidth * 1.3} ${baseGroundY}
-      C ${baseCenterX - stage.trunkWidth * 0.7} ${baseGroundY - 60}, 
-        ${baseCenterX - stage.trunkWidth * 0.6} ${trunkTopY + stage.trunkHeight * 0.5}, 
-        ${baseCenterX - stage.trunkWidth * 0.4} ${trunkTopY}
-      L ${baseCenterX + stage.trunkWidth * 0.4} ${trunkTopY}
-      C ${baseCenterX + stage.trunkWidth * 0.6} ${trunkTopY + stage.trunkHeight * 0.5}, 
-        ${baseCenterX + stage.trunkWidth * 0.7} ${baseGroundY - 60}, 
-        ${baseCenterX + stage.trunkWidth * 1.3} ${baseGroundY}
-      Z
-    `;
+    // 2. Tronco orgánico con curvas y raíces (o tallo tierno si es brote)
+    let trunkPath = '';
+    let seedBaseSVG = '';
+
+    if (stage.isSprout) {
+      // Tallo tierno que nace de la semilla abierta
+      trunkPath = `
+        M ${baseCenterX - 9} ${baseGroundY - 20}
+        C ${baseCenterX - 7} ${baseGroundY - 60}, ${baseCenterX - 5} ${trunkTopY + 30}, ${baseCenterX - 4} ${trunkTopY}
+        L ${baseCenterX + 4} ${trunkTopY}
+        C ${baseCenterX + 5} ${trunkTopY + 30}, ${baseCenterX + 7} ${baseGroundY - 60}, ${baseCenterX + 9} ${baseGroundY - 20}
+        Z
+      `;
+      // Semilla abierta en la base
+      seedBaseSVG = `
+        <g transform="translate(${baseCenterX}, ${baseGroundY - 15})">
+          <ellipse cx="0" cy="0" rx="35" ry="16" fill="#58311a" stroke="#78350f" stroke-width="1.5" />
+          <path d="M -22 -6 C -18 -18, -4 -22, 0 -8 C 4 -22, 18 -18, 22 -6 Z" fill="url(#seedGrad)" stroke="#f59e0b" stroke-width="1.5" />
+        </g>
+      `;
+    } else {
+      trunkPath = `
+        M ${baseCenterX - stage.trunkWidth * 1.3} ${baseGroundY}
+        C ${baseCenterX - stage.trunkWidth * 0.7} ${baseGroundY - 60}, 
+          ${baseCenterX - stage.trunkWidth * 0.6} ${trunkTopY + stage.trunkHeight * 0.5}, 
+          ${baseCenterX - stage.trunkWidth * 0.4} ${trunkTopY}
+        L ${baseCenterX + stage.trunkWidth * 0.4} ${trunkTopY}
+        C ${baseCenterX + stage.trunkWidth * 0.6} ${trunkTopY + stage.trunkHeight * 0.5}, 
+          ${baseCenterX + stage.trunkWidth * 0.7} ${baseGroundY - 60}, 
+          ${baseCenterX + stage.trunkWidth * 1.3} ${baseGroundY}
+        Z
+      `;
+    }
 
     // 3. Ramas principales orgánicas que crecen con la etapa
     const branchCurves = [
@@ -435,6 +571,12 @@ class ArbolVocacional {
             <stop offset="60%" stop-color="#78350f" />
             <stop offset="100%" stop-color="#451a03" />
           </radialGradient>
+          <radialGradient id="seedGrad" cx="35%" cy="35%" r="65%">
+            <stop offset="0%" stop-color="#fde047" />
+            <stop offset="35%" stop-color="#f59e0b" />
+            <stop offset="75%" stop-color="#b45309" />
+            <stop offset="100%" stop-color="#451a03" />
+          </radialGradient>
           <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
             <feGaussianBlur stdDeviation="8" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
@@ -447,13 +589,16 @@ class ArbolVocacional {
         <!-- Halo brillante de crecimiento -->
         <circle cx="${baseCenterX}" cy="${trunkTopY - 20}" r="${stage.foliageRadiusX * 1.05}" fill="${stage.glowColor}" filter="url(#softGlow)" />
 
+        <!-- Base de la semilla germinada (en caso de brote) -->
+        ${seedBaseSVG}
+
         <!-- Burbujas de copa de follaje -->
         <g id="foliage-bubbles">
           ${foliageBubblesSVG}
         </g>
 
-        <!-- Tronco principal -->
-        <path d="${trunkPath}" fill="url(#trunkGrad)" stroke="#451a03" stroke-width="2" />
+        <!-- Tronco principal / tallo tierno -->
+        <path d="${trunkPath}" fill="${stage.isSprout ? '#10b981' : 'url(#trunkGrad)'}" stroke="${stage.isSprout ? '#047857' : '#451a03'}" stroke-width="${stage.isSprout ? '2' : '2'}" />
 
         <!-- Ramas -->
         <g id="tree-branches">
