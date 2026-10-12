@@ -1,0 +1,134 @@
+/* ==========================================================================
+   DANTE 2.0 - ÁRBOL DE LOS SUEÑOS Y VOCACIONES (7MO GRADO)
+   Estilos específicos para el árbol interactivo, hojas, animaciones de viento
+   ========================================================================== */
+
+/* Fondo dinámico del cielo con estrellas y atmósfera natural */
+.tree-stage-bg {
+  background: radial-gradient(circle at 50% 25%, #1e293b 0%, #0f172a 60%, #020617 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Efecto de viento y balanceo suave en las hojas */
+@keyframes sway {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(3.5deg) translateY(-2px);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes sway-reverse {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-3.5deg) translateY(2px);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.leaf-sway-1 {
+  transform-origin: center top;
+  animation: sway 4s ease-in-out infinite;
+}
+
+.leaf-sway-2 {
+  transform-origin: center top;
+  animation: sway-reverse 5s ease-in-out infinite;
+}
+
+/* Brote / nacimiento de nueva hoja con rebote */
+@keyframes bloom-in {
+  0% {
+    transform: scale(0) rotate(-25deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.25) rotate(8deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.animate-bloom {
+  animation: bloom-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Resplandor y halo celestial para el árbol */
+.glow-emerald {
+  filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.4));
+}
+
+.glow-gold {
+  filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.45));
+}
+
+.leaf-glow:hover {
+  filter: drop-shadow(0 0 14px rgba(251, 191, 36, 0.85));
+  cursor: pointer;
+}
+
+/* Luciérnagas / partículas flotantes */
+@keyframes firefly-float {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-20px) translateX(15px);
+    opacity: 0.85;
+  }
+}
+
+.firefly {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: firefly-float 6s ease-in-out infinite;
+}
+
+/* Tarjetas de hojas en la lista */
+.leaf-card-item {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.leaf-card-item:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(16, 185, 129, 0.2);
+}
+
+/* Soporte para imprimir el árbol en tamaño afiche/póster de clase */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .tree-stage-bg {
+    background: #ffffff !important;
+    border: 2px solid #0f172a !important;
+  }
+
+  #tree-svg text {
+    fill: #0f172a !important;
+  }
+}

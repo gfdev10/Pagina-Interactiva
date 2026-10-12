@@ -43,15 +43,18 @@ El proyecto está diseñado bajo una arquitectura limpia, modular y basada en ES
 ```
 Pagina Interactiva/
 ├── index.html                  # Estructura semántica HTML5 y banner pedagógico
+├── arbol.html                  # Nueva página interactiva: El Árbol de las Vocaciones (7mo Grado)
 ├── package.json                # Configuración de scripts (npm start)
 ├── README.md                   # Documentación técnica completa
 ├── css/                        # Capa de estilos modular
 │   ├── main.css                # Variables de diseño, fuentes, scrollbars y reset
 │   ├── layout.css              # Cabecera, hero banner y rejilla de reinos
 │   ├── games.css               # Estilos de minijuegos, canvas y animaciones
-│   └── certificate.css         # Estilos visuales y reglas @media print del diploma
+│   ├── certificate.css         # Estilos visuales y reglas @media print del diploma
+│   └── arbol.css               # Animaciones de balanceo de hojas, viento y floración
 └── js/                         # Lógica JavaScript (ES6 Modules)
     ├── app.js                  # Orquestador principal y punto de entrada
+    ├── arbol.js                # Lógica del Árbol: crecimiento procedural SVG, hojas y localStorage
     ├── core/                   # Servicios nucleares
     │   ├── audio.js            # Motor de sonido sintetizado con Web Audio API
     │   ├── state.js            # Gestión de estado global (9 medallas) + localStorage

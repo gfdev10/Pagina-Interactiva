@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Enlaces de la vista Home (Hero)
   const heroExploreBtn = document.getElementById('hero-explore-btn');
+  const heroTreeBtn = document.getElementById('hero-tree-btn');
   const heroCertBtn = document.getElementById('hero-cert-btn');
   const gameBackBtn = document.getElementById('game-back-btn');
 
@@ -25,6 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (section) {
         section.scrollIntoView({ behavior: 'smooth' });
       }
+    });
+  }
+
+  if (heroTreeBtn) {
+    heroTreeBtn.addEventListener('click', () => {
+      // Abre arbol.html en nueva pestaña
     });
   }
 
