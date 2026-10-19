@@ -22,7 +22,7 @@ Propuesta pedagógica interactiva basada en *La Divina Comedia* de Dante Alighie
 * **Juego 4: Luces del Purgatorio (Simon Says)** (`game4-simon.js`)
   Juego de memoria auditiva y visual que recorre las 8 terrazas del monte.
 * **Juego 5: Escalada en Plataformas 2D** (`game5-plataformas.js`)
-  Plataformas en física 2D donde Dante salta entre cornisas móviles para purificar las 7 marcas "P" de su frente.
+  Plataformas en física 2D a lo largo de **3 niveles** (Cornisas Bajas, Cornisas Medias y Cima del Edén), donde Dante salta entre cornisas fijas y móviles para purificar las 7 marcas "P" de su frente.
 * **Juego 6: Balanza de las Virtudes** (`game6-balanza.js`)
   Equilibrio moral y matemático: el peso del pecado de la soberbia cambia dinámicamente en cada partida (rango aleatorio entre **10 y 25**), exigiendo combinar virtudes exactas para alcanzar el balance.
 
@@ -72,7 +72,7 @@ Pagina Interactiva/
         ├── game2-memotest.js   # Juego 2: Memotest de Palabras
         ├── game3-laberinto.js  # Juego 3: Laberinto de Minos (3 Niveles)
         ├── game4-simon.js      # Juego 4: Luces del Purgatorio
-        ├── game5-plataformas.js# Juego 5: Escalada en Plataformas 2D
+        ├── game5-plataformas.js# Juego 5: Escalada en Plataformas 2D (3 Niveles)
         ├── game6-balanza.js    # Juego 6: Balanza de las Virtudes (Soberbia dinámica)
         ├── game7-vuelo.js      # Juego 7: Vuelo por la Esfera Celeste (3 Niveles)
         ├── game8-enigma.js     # Juego 8: Enigma Rosa Creadora (3 Niveles con pistas)

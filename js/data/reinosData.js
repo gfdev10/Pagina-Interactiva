@@ -45,7 +45,7 @@ export const reinosData = [
     },
     games: [
       { id: 4, title: '4. Luces del Purgatorio (Simon 8)', description: 'Memoriza secuencias visuales de dificultad creciente en las 8 terrazas.' },
-      { id: 5, title: '5. Escalada en Plataformas 2D', description: 'Salta entre cornisas y elimina las 7 marcas "P".' },
+      { id: 5, title: '5. Escalada en Plataformas 2D', description: 'Asciende por 3 niveles de cornisas eliminando las 7 marcas "P" hasta el Edén.' },
       { id: 6, title: '6. Balanza de las Virtudes', description: 'Contrarresta el pecado de la soberbia con virtudes exactas.' }
     ]
   },

@@ -1,7 +1,10 @@
 /**
  * Juego 5: Escalada en Plataformas 2D - Las 7 Cornisas del Purgatorio
- * Versión Mejorada: Motor de físicas 60FPS con inercia suave, plataformas móviles,
- * partículas de luz, HUD de marcas 'P', aumento progresivo de ligereza y cima del Edén.
+ * Versión Multivel: 3 Niveles completos a lo largo del Monte Purgatorio:
+ * - Nivel 1: Cornisas Bajas (Soberbia, Envidia e Ira - 3 marcas 'P')
+ * - Nivel 2: Cornisas Medias y Viento Místico (Pereza y Avaricia - 2 marcas 'P')
+ * - Nivel 3: Altas Cornisas y Cima del Edén (Gula y Lujuria - 2 marcas 'P' y cumbre celestial)
+ * Total: 7 marcas "P" purificadas para acceder al Paraíso Terrenal con física 60 FPS y salto más ligero.
  */
 import { audioManager } from '../core/audio.js';
 import { stateManager } from '../core/state.js';
@@ -10,18 +13,129 @@ export function initGame5(container, restartGame) {
   const CANVAS_WIDTH = 340;
   const CANVAS_HEIGHT = 420;
   const TOTAL_PS = 7;
+  const TOTAL_LEVELS = 3;
+
+  // Definición de los 3 Niveles del Purgatorio
+  const levelsData = [
+    {
+      level: 1,
+      title: "Cornisas Bajas",
+      subtitle: "Soberbia, Envidia e Ira (3 Marcas)",
+      skyGrad: ["#1e1b4b", "#3b0764", "#1c1917"],
+      pRange: [0, 1, 2],
+      platforms: [
+        // Base inferior (Antepurgatorio)
+        { x: 10, y: 405, w: 320, h: 15, type: 'ground' },
+        // Cornisa 1: Soberbia
+        { x: 30, y: 345, w: 90, h: 10, type: 'stone' },
+        // Cornisa 2: Envidia (Plataforma Móvil)
+        { x: 140, y: 285, w: 85, h: 10, type: 'moving', minX: 120, maxX: 225, vx: 1.2 },
+        // Cornisa 3: Ira
+        { x: 40, y: 225, w: 90, h: 10, type: 'stone' },
+        // Portal al Nivel 2 (Ángel de la Humildad)
+        { x: 110, y: 140, w: 120, h: 12, type: 'portal' }
+      ],
+      items: [
+        { id: 0, x: 75, y: 320, active: true, name: 'Soberbia' },
+        { id: 1, x: 180, y: 260, active: true, name: 'Envidia', attachTo: 2 },
+        { id: 2, x: 85, y: 200, active: true, name: 'Ira' }
+      ]
+    },
+    {
+      level: 2,
+      title: "Cornisas Medias",
+      subtitle: "Pereza y Avaricia (2 Marcas)",
+      skyGrad: ["#2e1065", "#7c2d12", "#18181b"],
+      pRange: [3, 4],
+      platforms: [
+        // Base intermedia
+        { x: 10, y: 405, w: 320, h: 15, type: 'ground' },
+        // Cornisa 1: Roca escarpada
+        { x: 220, y: 345, w: 80, h: 10, type: 'stone' },
+        // Cornisa 2: Móvil veloz
+        { x: 80, y: 285, w: 80, h: 10, type: 'moving', minX: 50, maxX: 180, vx: 1.5 },
+        // Cornisa 3: Roca intermedia
+        { x: 35, y: 215, w: 85, h: 10, type: 'stone' },
+        // Cornisa 4: Móvil alta
+        { x: 165, y: 155, w: 80, h: 10, type: 'moving', minX: 130, maxX: 245, vx: -1.4 },
+        // Portal al Nivel 3 (Ángel del Celo)
+        { x: 70, y: 85, w: 120, h: 12, type: 'portal' }
+      ],
+      items: [
+        { id: 3, x: 120, y: 260, active: true, name: 'Pereza', attachTo: 2 },
+        { id: 4, x: 75, y: 190, active: true, name: 'Avaricia' }
+      ]
+    },
+    {
+      level: 3,
+      title: "Altas Cornisas y Cima del Edén",
+      subtitle: "Gula y Lujuria (2 Marcas y Cumbre)",
+      skyGrad: ["#0f172a", "#065f46", "#3b1d06"],
+      pRange: [5, 6],
+      platforms: [
+        // Base de las altas terrazas
+        { x: 10, y: 405, w: 320, h: 15, type: 'ground' },
+        // Cornisa 1: Templanza
+        { x: 35, y: 345, w: 75, h: 10, type: 'stone' },
+        // Cornisa 2: Plataforma de luz móvil
+        { x: 155, y: 285, w: 80, h: 10, type: 'moving', minX: 110, maxX: 235, vx: 1.7 },
+        // Cornisa 3: Roca esmeralda
+        { x: 45, y: 215, w: 75, h: 10, type: 'stone' },
+        // Cornisa 4: Plataforma flotante
+        { x: 175, y: 145, w: 75, h: 10, type: 'moving', minX: 125, maxX: 245, vx: -1.6 },
+        // Cornisa 5: Escalón previo
+        { x: 40, y: 95, w: 70, h: 10, type: 'stone' },
+        // CIMA DEL PARAÍSO TERRENAL (EDÉN)
+        { x: 90, y: 45, w: 160, h: 12, type: 'summit' }
+      ],
+      items: [
+        { id: 5, x: 195, y: 260, active: true, name: 'Gula', attachTo: 2 },
+        { id: 6, x: 80, y: 190, active: true, name: 'Lujuria' }
+      ]
+    }
+  ];
+
+  let currentLevelIdx = 0;
+  let clearedMarks = new Set(); // Registra las 'P' purificadas acumuladas (0 a 6)
+
+  // Estado del Jugador (Dante)
+  let player = {
+    x: 50,
+    y: 380,
+    vx: 0,
+    vy: 0,
+    w: 16,
+    h: 22,
+    grounded: false,
+    facing: 1,
+    jumpPower: -8.2,
+    gravity: 0.38,
+    speed: 4.2
+  };
+
+  let platforms = [];
+  let items = [];
+  let isGameOver = false;
+  let isLevelTransitioning = false;
+  let particles = [];
+  let animTick = 0;
+
+  // Estado del teclado
+  const keys = { left: false, right: false, jump: false };
 
   container.innerHTML = `
     <div class="space-y-3 text-center max-w-md w-full">
-      <!-- HUD Superior: Marcas 'P' en la frente de Dante -->
-      <div class="bg-slate-950/90 p-3 rounded-2xl border border-amber-900/60 shadow-inner flex justify-between items-center text-xs">
+      <!-- HUD Superior: Nivel y Marcas 'P' -->
+      <div class="bg-slate-950/90 p-3 rounded-2xl border border-amber-900/60 shadow-inner flex flex-wrap justify-between items-center text-xs gap-2">
         <div class="flex items-center space-x-2">
-          <i class="fa-solid fa-mountain-sun text-amber-400"></i>
-          <span class="text-slate-300 font-semibold">Marcas purificadas:</span>
+          <span id="plat-level-badge" class="px-2.5 py-1 bg-amber-500/20 border border-amber-500/50 text-amber-300 font-bold rounded-full text-[11px]">
+            Nivel 1 / 3
+          </span>
+          <span class="text-slate-300 font-semibold hidden sm:inline">Purificadas:</span>
           <span id="plat-count-text" class="text-amber-400 font-bold text-sm">0 / 7</span>
         </div>
         
-        <!-- Marcas visuales 'P' -->
+        <!-- Marcas visuales 'P' en la frente de Dante -->
         <div class="flex items-center space-x-1" id="plat-p-marks">
           ${Array(TOTAL_PS).fill(0).map((_, i) => `
             <span id="p-mark-${i}" class="w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] bg-amber-950/80 border border-amber-700 text-amber-300 transition-all duration-300">
@@ -33,11 +147,11 @@ export function initGame5(container, restartGame) {
 
       <!-- Estado dinámico -->
       <div id="plat-status-banner" class="text-xs font-bold text-amber-300 transition-all">
-        🏔️ Salta entre las cornisas y borra las 7 marcas "P" para alcanzar la cima
+        🏔️ Nivel 1: Salta y borra las 3 primeras marcas "P" para abrir el portal
       </div>
 
-      <!-- Canvas del Juego de Plataformas -->
-      <div class="relative inline-block mx-auto rounded-2xl overflow-hidden border-2 border-amber-800/80 shadow-2xl bg-slate-950">
+      <!-- Canvas de Juego de Plataformas -->
+      <div class="relative inline-block mx-auto rounded-2xl overflow-hidden border-2 border-amber-800/80 shadow-2xl bg-slate-950 select-none">
         <canvas id="plat-canvas" width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}" class="block"></canvas>
       </div>
 
@@ -65,75 +179,36 @@ export function initGame5(container, restartGame) {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
 
-  // Estado del Jugador (Dante)
-  let player = {
-    x: 50,
-    y: 380,
-    vx: 0,
-    vy: 0,
-    w: 16,
-    h: 22,
-    grounded: false,
-    facing: 1, // 1: derecha, -1: izquierda
-    jumpPower: -8.2, // Aumenta con cada 'P' borrada
-    gravity: 0.38,
-    speed: 4.2
-  };
+  function loadLevel(lvlIdx) {
+    currentLevelIdx = lvlIdx;
+    isLevelTransitioning = false;
+    const lvl = levelsData[currentLevelIdx];
 
-  let psCollected = 0;
-  let isGameOver = false;
-  let particles = [];
-  let animTick = 0;
+    // Clonar plataformas para mantener estado mutable de las móviles
+    platforms = lvl.platforms.map(p => ({ ...p }));
+    items = lvl.items.map(it => ({ ...it, active: !clearedMarks.has(it.id) }));
 
-  // Estado continuo del teclado para movimiento 100% fluido
-  const keys = { left: false, right: false, jump: false };
+    // Posición inicial del jugador
+    player.x = 50;
+    player.y = 380;
+    player.vx = 0;
+    player.vy = 0;
+    player.grounded = false;
 
-  // Definición de Plataformas (fijas y móviles)
-  const platforms = [
-    // Base inferior (Antepurgatorio)
-    { x: 10, y: 405, w: 320, h: 15, type: 'ground' },
+    // Con cada nivel, el salto de Dante es ligeramente más ágil
+    player.jumpPower = -8.2 - (clearedMarks.size * 0.22);
+    player.speed = 4.2 + (clearedMarks.size * 0.1);
 
-    // Cornisa 1: Soberbia
-    { x: 30, y: 345, w: 85, h: 10, type: 'stone' },
+    updateHUD();
+  }
 
-    // Cornisa 2: Envidia (Plataforma Móvil Horizontal)
-    { x: 140, y: 295, w: 80, h: 10, type: 'moving', minX: 130, maxX: 230, vx: 1.2 },
-
-    // Cornisa 3: Ira
-    { x: 40, y: 245, w: 85, h: 10, type: 'stone' },
-
-    // Cornisa 4: Pereza (Plataforma Móvil Horizontal)
-    { x: 150, y: 195, w: 80, h: 10, type: 'moving', minX: 140, maxX: 240, vx: -1.3 },
-
-    // Cornisa 5: Avaricia
-    { x: 35, y: 145, w: 85, h: 10, type: 'stone' },
-
-    // Cornisa 6: Gula (Plataforma Móvil Flotante)
-    { x: 150, y: 95, w: 80, h: 10, type: 'moving', minX: 130, maxX: 230, vx: 1.4 },
-
-    // Cornisa 7 / Cima del Purgatorio: El Paraíso Terrenal
-    { x: 80, y: 45, w: 180, h: 12, type: 'summit' }
-  ];
-
-  // Las 7 Marcas 'P' distribuidas en el ascenso
-  const items = [
-    { id: 0, x: 72, y: 320, active: true, name: 'Soberbia' },
-    { id: 1, x: 180, y: 270, active: true, name: 'Envidia', attachTo: 2 },
-    { id: 2, x: 82, y: 220, active: true, name: 'Ira' },
-    { id: 3, x: 190, y: 170, active: true, name: 'Pereza', attachTo: 4 },
-    { id: 4, x: 77, y: 120, active: true, name: 'Avaricia' },
-    { id: 5, x: 190, y: 70, active: true, name: 'Gula', attachTo: 6 },
-    { id: 6, x: 170, y: 22, active: true, name: 'Lujuria' }
-  ];
-
-  // Partículas mágicas al borrar marcas 'P'
-  function addSparks(x, y, color = '#f59e0b', count = 12) {
+  function addSparks(x, y, color = '#f59e0b', count = 14) {
     for (let i = 0; i < count; i++) {
       particles.push({
         x: x,
         y: y,
-        vx: (Math.random() - 0.5) * 4,
-        vy: (Math.random() - 0.5) * 4 - 1,
+        vx: (Math.random() - 0.5) * 4.5,
+        vy: (Math.random() - 0.5) * 4.5 - 1.2,
         life: 25 + Math.random() * 15,
         maxLife: 40,
         color: color,
@@ -143,33 +218,49 @@ export function initGame5(container, restartGame) {
   }
 
   function updateHUD() {
+    const lvlBadge = container.querySelector('#plat-level-badge');
     const textEl = container.querySelector('#plat-count-text');
     const banner = container.querySelector('#plat-status-banner');
+    const lvl = levelsData[currentLevelIdx];
 
-    if (textEl) {
-      textEl.innerText = `${psCollected} / ${TOTAL_PS}`;
+    if (lvlBadge) {
+      lvlBadge.innerText = `Nivel ${lvl.level} / ${TOTAL_LEVELS}`;
     }
 
-    items.forEach((it, idx) => {
-      const mark = container.querySelector(`#p-mark-${idx}`);
+    if (textEl) {
+      textEl.innerText = `${clearedMarks.size} / ${TOTAL_PS}`;
+    }
+
+    // Actualizar casillas de las 7 marcas 'P'
+    for (let i = 0; i < TOTAL_PS; i++) {
+      const mark = container.querySelector(`#p-mark-${i}`);
       if (mark) {
-        if (!it.active) {
-          mark.className = 'w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] bg-emerald-500 border border-emerald-400 text-slate-950 shadow-md scale-110';
+        if (clearedMarks.has(i)) {
+          mark.className = 'w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] bg-emerald-500 border border-emerald-400 text-slate-950 shadow-md scale-105';
           mark.innerHTML = '<i class="fa-solid fa-check text-[9px]"></i>';
+        } else if (lvl.pRange.includes(i)) {
+          mark.className = 'w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] bg-amber-950/90 border border-amber-500 text-amber-300 animate-pulse';
+          mark.innerText = 'P';
         } else {
-          mark.className = 'w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] bg-amber-950/80 border border-amber-700 text-amber-300';
+          mark.className = 'w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] bg-slate-900 border border-slate-700 text-slate-500 opacity-60';
           mark.innerText = 'P';
         }
       }
-    });
+    }
 
-    if (banner) {
-      if (psCollected >= TOTAL_PS) {
-        banner.className = "text-xs font-bold text-emerald-400 animate-pulse";
-        banner.innerHTML = "✨ ¡Las 7 'P' han sido borradas! ¡Sube a la cima del Edén!";
+    if (banner && !isLevelTransitioning) {
+      const currentLevelCleared = lvl.pRange.every(id => clearedMarks.has(id));
+      if (currentLevelCleared) {
+        if (currentLevelIdx < TOTAL_LEVELS - 1) {
+          banner.className = "text-xs font-bold text-emerald-400 animate-pulse";
+          banner.innerHTML = `✨ ¡Marcas borradas! Sube al portal del Ángel para avanzar al Nivel ${currentLevelIdx + 2}`;
+        } else {
+          banner.className = "text-xs font-bold text-amber-300 animate-pulse";
+          banner.innerHTML = "👑 ¡Todas las 'P' borradas! ¡Sube a la cima del Edén!";
+        }
       } else {
         banner.className = "text-xs font-bold text-amber-300";
-        banner.innerText = `🏔️ Marcas restantes: ${TOTAL_PS - psCollected} (Tu salto se vuelve más ligero al purificar)`;
+        banner.innerText = `🏔️ ${lvl.title}: Borra las marcas "P" de este tramo (${lvl.subtitle})`;
       }
     }
   }
@@ -179,13 +270,37 @@ export function initGame5(container, restartGame) {
       player.vy = player.jumpPower;
       player.grounded = false;
       audioManager.playClick();
-      addSparks(player.x + player.w / 2, player.y + player.h, 'rgba(251, 191, 36, 0.6)', 5);
+      addSparks(player.x + player.w / 2, player.y + player.h, 'rgba(251, 191, 36, 0.7)', 6);
+    }
+  }
+
+  function handleLevelComplete() {
+    if (isLevelTransitioning) return;
+    isLevelTransitioning = true;
+    audioManager.playSuccess();
+    addSparks(player.x + player.w / 2, player.y, '#34d399', 25);
+
+    if (currentLevelIdx < TOTAL_LEVELS - 1) {
+      const nextLvl = currentLevelIdx + 1;
+      const banner = container.querySelector('#plat-status-banner');
+      if (banner) {
+        banner.className = "text-xs font-bold text-emerald-300 animate-bounce";
+        banner.innerHTML = `🌟 ¡Nivel ${currentLevelIdx + 1} Superado! Ascendiendo a <strong>${levelsData[nextLvl].title}</strong>...`;
+      }
+
+      setTimeout(() => {
+        loadLevel(nextLvl);
+      }, 1100);
+    } else {
+      winGame();
     }
   }
 
   function updatePhysics() {
-    if (isGameOver) return;
+    if (isGameOver || isLevelTransitioning) return;
     animTick++;
+
+    const lvl = levelsData[currentLevelIdx];
 
     // Movimiento Horizontal continuo
     if (keys.left) {
@@ -195,14 +310,14 @@ export function initGame5(container, restartGame) {
       player.vx = player.speed;
       player.facing = 1;
     } else {
-      player.vx *= 0.75; // Fricción
+      player.vx *= 0.76; // Fricción
     }
 
     if (keys.jump && player.grounded) {
       doJump();
     }
 
-    // Aplicar Gravedad
+    // Gravedad
     player.vy += player.gravity;
 
     // Actualizar Posición
@@ -235,16 +350,25 @@ export function initGame5(container, restartGame) {
         player.vy = 0;
         player.grounded = true;
 
-        // Si la plataforma es móvil, arrastra suavemente a Dante
+        // Arrastre suave si es móvil
         if (p.type === 'moving') {
           player.x += p.vx;
+        }
+
+        // Si es Portal o Cima y se cumplieron las 'P' del nivel:
+        const currentLevelCleared = lvl.pRange.every(id => clearedMarks.has(id));
+        if (currentLevelCleared) {
+          if (p.type === 'portal') {
+            handleLevelComplete();
+          } else if (p.type === 'summit') {
+            winGame();
+          }
         }
       }
     });
 
     // Colisión con Marcas 'P'
     items.forEach(it => {
-      // Si el item está anclado a plataforma móvil, seguirla
       if (it.attachTo !== undefined) {
         const plat = platforms[it.attachTo];
         if (plat) {
@@ -257,22 +381,17 @@ export function initGame5(container, restartGame) {
         const pCenterY = player.y + player.h / 2;
         if (Math.hypot(pCenterX - it.x, pCenterY - it.y) < 22) {
           it.active = false;
-          psCollected++;
+          clearedMarks.add(it.id);
           audioManager.playSound('success');
-          addSparks(it.x, it.y, '#fbbf24', 18);
+          addSparks(it.x, it.y, '#fbbf24', 20);
 
-          // Dante se vuelve progresivamente más ligero con cada pecado purificado
-          player.jumpPower -= 0.25;
-          player.speed += 0.15;
+          // Purificación: salto más ligero y veloz
+          player.jumpPower -= 0.22;
+          player.speed += 0.1;
           updateHUD();
         }
       }
     });
-
-    // Condición de Victoria: Todas las 'P' recolectadas y llegar a la cima del Edén
-    if (psCollected >= TOTAL_PS && player.y <= 60 && player.grounded) {
-      winGame();
-    }
 
     // Actualizar partículas
     particles.forEach(pt => {
@@ -284,22 +403,27 @@ export function initGame5(container, restartGame) {
   }
 
   function draw() {
-    // 1. Fondo Gradiente Montaña Purgatorio (Amanecer / Cielo Místico)
+    const lvl = levelsData[currentLevelIdx];
+
+    // 1. Fondo Gradiente Montañoso según el Nivel
     const skyGrad = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
-    skyGrad.addColorStop(0, '#1e1b4b'); // Azul noche estrellado arriba
-    skyGrad.addColorStop(0.5, '#3b0764'); // Púrpura intermedio
-    skyGrad.addColorStop(1, '#1c1917'); // Piedra oscura abajo
+    skyGrad.addColorStop(0, lvl.skyGrad[0]);
+    skyGrad.addColorStop(0.5, lvl.skyGrad[1]);
+    skyGrad.addColorStop(1, lvl.skyGrad[2]);
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    // Estrellas sutiles de fondo
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    // Estrellas / partículas de fondo
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
     ctx.fillRect(30, 25, 2, 2);
     ctx.fillRect(110, 60, 2, 2);
     ctx.fillRect(280, 40, 2, 2);
-    ctx.fillRect(240, 90, 2, 2);
+    ctx.fillRect(240, 95, 2, 2);
+    ctx.fillRect(60, 150, 1.5, 1.5);
 
     // 2. Dibujar Plataformas
+    const currentLevelCleared = lvl.pRange.every(id => clearedMarks.has(id));
+
     platforms.forEach(p => {
       if (p.type === 'ground') {
         // Base inferior
@@ -307,8 +431,27 @@ export function initGame5(container, restartGame) {
         ctx.fillRect(p.x, p.y, p.w, p.h);
         ctx.fillStyle = '#15803d'; // Césped
         ctx.fillRect(p.x, p.y, p.w, 3);
+      } else if (p.type === 'portal') {
+        // Portal al siguiente nivel custodiado por Ángel
+        ctx.fillStyle = '#1e3a8a';
+        ctx.fillRect(p.x, p.y, p.w, p.h);
+        ctx.fillStyle = currentLevelCleared ? '#38bdf8' : '#64748b';
+        ctx.fillRect(p.x, p.y, p.w, 3);
+
+        if (currentLevelCleared) {
+          // Resplandor del portal abierto
+          const glow = ctx.createRadialGradient(p.x + p.w / 2, p.y, 8, p.x + p.w / 2, p.y, 50);
+          glow.addColorStop(0, 'rgba(56, 189, 248, 0.45)');
+          glow.addColorStop(1, 'rgba(56, 189, 248, 0)');
+          ctx.fillStyle = glow;
+          ctx.fillRect(p.x - 15, p.y - 35, p.w + 30, 45);
+        }
+
+        ctx.font = '18px serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(currentLevelCleared ? '👼✨' : '👼', p.x + p.w / 2, p.y - 6);
       } else if (p.type === 'summit') {
-        // Cima del Edén (Dorado resplandeciente)
+        // Cima del Edén (Dorado)
         ctx.fillStyle = '#b45309';
         ctx.fillRect(p.x, p.y, p.w, p.h);
         ctx.fillStyle = '#fbbf24';
@@ -316,17 +459,16 @@ export function initGame5(container, restartGame) {
 
         // Aura celestial de la cumbre
         const glow = ctx.createRadialGradient(p.x + p.w / 2, p.y, 10, p.x + p.w / 2, p.y, 60);
-        glow.addColorStop(0, 'rgba(251, 191, 36, 0.35)');
+        glow.addColorStop(0, 'rgba(251, 191, 36, 0.45)');
         glow.addColorStop(1, 'rgba(251, 191, 36, 0)');
         ctx.fillStyle = glow;
-        ctx.fillRect(p.x - 20, p.y - 40, p.w + 40, 50);
+        ctx.fillRect(p.x - 20, p.y - 45, p.w + 40, 55);
 
-        // Ángel o Portal en la cima
-        ctx.font = '20px serif';
+        ctx.font = '22px serif';
         ctx.textAlign = 'center';
-        ctx.fillText('👼', p.x + p.w / 2, p.y - 8);
+        ctx.fillText('👑👼', p.x + p.w / 2, p.y - 8);
       } else if (p.type === 'moving') {
-        // Plataforma móvil de nube/piedra mística
+        // Plataforma móvil
         ctx.fillStyle = '#0369a1';
         ctx.fillRect(p.x, p.y, p.w, p.h);
         ctx.fillStyle = '#38bdf8';
@@ -346,12 +488,12 @@ export function initGame5(container, restartGame) {
         const floatY = it.y + Math.sin(animTick * 0.1 + it.id) * 4;
 
         // Aura dorada
-        const radGrad = ctx.createRadialGradient(it.x, floatY, 3, it.x, floatY, 15);
-        radGrad.addColorStop(0, 'rgba(245, 158, 11, 0.8)');
+        const radGrad = ctx.createRadialGradient(it.x, floatY, 3, it.x, floatY, 16);
+        radGrad.addColorStop(0, 'rgba(245, 158, 11, 0.85)');
         radGrad.addColorStop(1, 'rgba(245, 158, 11, 0)');
         ctx.fillStyle = radGrad;
         ctx.beginPath();
-        ctx.arc(it.x, floatY, 15, 0, Math.PI * 2);
+        ctx.arc(it.x, floatY, 16, 0, Math.PI * 2);
         ctx.fill();
 
         // Letra 'P'
@@ -377,17 +519,17 @@ export function initGame5(container, restartGame) {
     const px = player.x;
     const py = player.y;
 
-    // Aura de pureza que crece con el progreso
-    const auraRadius = 14 + psCollected * 1.5;
+    // Aura de pureza creciente
+    const auraRadius = 14 + clearedMarks.size * 2;
     const pAura = ctx.createRadialGradient(px + player.w / 2, py + player.h / 2, 4, px + player.w / 2, py + player.h / 2, auraRadius);
-    pAura.addColorStop(0, 'rgba(254, 240, 138, 0.4)');
+    pAura.addColorStop(0, 'rgba(254, 240, 138, 0.45)');
     pAura.addColorStop(1, 'rgba(254, 240, 138, 0)');
     ctx.fillStyle = pAura;
     ctx.beginPath();
     ctx.arc(px + player.w / 2, py + player.h / 2, auraRadius, 0, Math.PI * 2);
     ctx.fill();
 
-    // Cuerpo de Dante (Túnica / Avatar)
+    // Sprite de Dante
     ctx.font = '22px serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
@@ -407,24 +549,27 @@ export function initGame5(container, restartGame) {
 
     setTimeout(() => {
       container.innerHTML = `
-        <div class="text-center space-y-4">
-          <i class="fa-solid fa-mountain-sun text-5xl text-amber-400 animate-bounce"></i>
-          <h3 class="font-cinzel text-2xl font-bold text-white">¡Cima del Purgatorio Alcanzada!</h3>
-          <p class="text-slate-300 text-sm max-w-sm mx-auto leading-relaxed">
-            Has borrado las 7 marcas "P" de la frente de Dante al subir todas las cornisas y has entrado al <strong>Paraíso Terrenal (Edén)</strong>.
+        <div class="text-center space-y-4 max-w-sm mx-auto p-4">
+          <i class="fa-solid fa-crown text-5xl text-amber-400 animate-bounce"></i>
+          <h3 class="font-cinzel text-2xl font-bold text-white">¡Cima del Purgatorio Conquistada!</h3>
+          <p class="text-slate-300 text-sm leading-relaxed">
+            Has superado los <strong>3 niveles</strong>, borrado las <strong>7 marcas "P"</strong> y entrado con éxito al sagrado <strong>Paraíso Terrenal (Edén)</strong>.
           </p>
-          <button id="retry-g5-btn" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-xs text-amber-400 font-bold rounded-xl border border-slate-700 transition-colors shadow-lg">
-            <i class="fa-solid fa-rotate-right mr-1"></i> Jugar de nuevo
-          </button>
+          <div class="pt-2">
+            <button id="retry-g5-btn" class="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black rounded-xl transition-transform active:scale-95 shadow-xl flex items-center justify-center space-x-2 mx-auto">
+              <i class="fa-solid fa-rotate-right"></i>
+              <span>JUGAR DE NUEVO (NIVEL 1)</span>
+            </button>
+          </div>
         </div>
       `;
       container.querySelector('#retry-g5-btn').addEventListener('click', () => {
         restartGame(5);
       });
-    }, 400);
+    }, 450);
   }
 
-  // Configuración de Teclado Continua
+  // Manejo de Teclado
   function handleKeyDown(e) {
     if (isGameOver) return;
     const k = e.key;
@@ -460,11 +605,11 @@ export function initGame5(container, restartGame) {
   }
 
   window.onkeydown = handleKeyDown;
-  document.onkeydown = handleKeyDown;
+  document.onkeydown = null;
   window.onkeyup = handleKeyUp;
-  document.onkeyup = handleKeyUp;
+  document.onkeyup = null;
 
-  // Botones táctiles interactivos con soporte de mantener presionado
+  // Botones táctiles
   const btnLeft = container.querySelector('#plat-btn-left');
   const btnRight = container.querySelector('#plat-btn-right');
   const btnJump = container.querySelector('#plat-btn-jump');
@@ -481,12 +626,14 @@ export function initGame5(container, restartGame) {
   bindTouch(btnRight, 'right');
   bindTouch(btnJump, 'jump');
 
-  // Bucle de físicas y renderizado a 60 FPS
+  // Inicializar Nivel 1
+  loadLevel(0);
+
+  // Bucle de físicas y render a 60 FPS
   const loop = setInterval(() => {
     updatePhysics();
     draw();
   }, 1000 / 60);
 
   stateManager.setLoopInterval(loop);
-  updateHUD();
 }
